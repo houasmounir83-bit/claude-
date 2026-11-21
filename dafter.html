@@ -384,6 +384,40 @@ const CHARGE_CATS = ["إيجار","كهرباء وماء","أجور","نقل و�
 function toast(t, bad){ const el = document.createElement("div"); el.className = "toast" + (bad ? " bad" : ""); el.textContent = t; $("#toasts").appendChild(el); setTimeout(() => el.remove(), bad ? 4200 : 2600); }
 
 /* ================= قاعدة البيانات ================= */
+// منتجات من وصل التسليم 030417 (20/11/2026) — تُضاف مرة واحدة فقط، ولا تغيّر منتجًا موجودًا
+const CATALOG_V = 2;
+const CATALOG_FAMILIES = [{id:"f1",name:"أكياس كوبتان"},{id:"f2",name:"أكياس مطبوعة"},{id:"f3",name:"أكياس بلاستيك"},{id:"f4",name:"ورق وتغليف"},{id:"f5",name:"علب وأكواب وبركات"}];
+const CATALOG_2 = [
+  ["1000000005554","KOBTAN NOIR PK/60 N (11)","f1",860],
+  ["1000000000719","KOBTAN NOIR PK/60 N (7)","f1",660],
+  ["1000000003291","SOUFLLES P/30 KOBTAN 1K","f1",14.20,100],
+  ["1000000005318","PAIN P30","f3",860],
+  ["1000000005899","Sac N:18","f3",530],
+  ["1000000007404","Power Bag 5k","f3",890],
+  ["1000000003390","NOVI PACK 150 M","f4",1440,6],
+  ["1000000006032","Serviette Berla","f4",610],
+  ["1000000007268","Papier chut","f4",980],
+  ["1000000006872","Papier Demi Ram","f4",860],
+  ["1000000007435","Papier Sandwitch","f4",1380],
+  ["1000000004434","Goblet HP","f5",94],
+  ["1000000005493","Boit Crepes Magic","f5",1170],
+  ["1000000009484","Poutin ABS 470","f5",1670],
+  ["1000000006357","12/15","f5",650],
+  ["1000000006889","Barquette Plastique 500 CCL 100x10","f5",1020],
+];
+function applyCatalog(d){
+  if ((d.settings.catalogV || 0) >= CATALOG_V) return 0;
+  for (const f of CATALOG_FAMILIES) if (!d.families.some(x => x.id === f.id || x.name === f.name)) d.families.push({...f});
+  let added = 0;
+  for (const [code, name, fam, sell, col] of CATALOG_2){
+    if (d.products.some(p => p.code === code)) continue;
+    const famId = (d.families.find(x => x.id === fam) || {}).id || "";
+    d.products.push({id:uid(), code, name, familyId:famId, buy:0, sell, sellGros:0, stock:0, colisage:col || 1, min:0}); added++;
+  }
+  d.settings.catalogV = CATALOG_V;
+  return added;
+}
+let catalogAdded = 0;
 let storageOk = true;
 let db = load();
 function load(){
@@ -408,6 +442,7 @@ function cleanStart(){
     P("1000000004144","KOROZO MY","f3",330),
     P("1000000000962","25K couleur 2 Choix","f3",1305),
   ];
+  applyCatalog(d);
   return d;
 }
 function normalize(d){
@@ -416,6 +451,7 @@ function normalize(d){
   for (const k in base) if (d[k] === undefined) d[k] = base[k];
   d.settings = Object.assign(base.settings, d.settings);
   d.drafts = d.drafts || {};
+  const n = applyCatalog(d); if (n){ catalogAdded += n; d._rev = Date.now(); }
   return d;
 }
 function emptyDb(){
@@ -720,7 +756,7 @@ function viewDoc(type, el){
     sugg.hidden = false; $("#d-code").setAttribute("aria-expanded", "true");
   }
   $("#d-code").addEventListener("input", showSugg);
-  $("#d-code").addEventListener("focus", () => { if (isTouch) setTimeout(() => $(".addbar").scrollIntoView({block:"start", behavior:"smooth"}), 250); });
+  $("#d-code").addEventListener("focus", () => { if (isTouch) setTimeout(() => { const ab = $(".addbar"); ab && ab.scrollIntoView({block:"start", behavior:"smooth"}); }, 250); });
   $("#d-code").addEventListener("blur", () => setTimeout(hideSugg, 180));
   sugg.addEventListener("pointerdown", e => e.preventDefault());
   sugg.addEventListener("click", e => { const b = e.target.closest("[data-si2]"); if (!b) return; addLine(sItems[+b.dataset.si2], num($("#d-qty").value) || 1); resetAdd(); });
@@ -1493,6 +1529,7 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigat
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 const hadLocal = (() => { try { return !!localStorage.getItem(KEY); } catch { return false; } })();
 if (!hadLocal){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
+if (catalogAdded){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} const n = catalogAdded; setTimeout(() => toast(`✓ أُضيف ${n} منتج جديد من وصل 030417`), 600); catalogAdded = 0; }
 route();
 enhance(document);
 cloudInit();
