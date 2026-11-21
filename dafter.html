@@ -2,7 +2,15 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13213f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="دفتر التاجر">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>دفتر التاجر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,7 +156,7 @@ label.f input,label.f select,label.f textarea{color:var(--ink);font-weight:500;f
 .mbar{display:none}
 #d-cam{display:none}
 @media (hover:none){kbd{display:none}}
-@media (max-width:640px){
+@media (max-width:700px){
   .doc-fields{grid-template-columns:1fr 1fr;gap:8px}
   .doc-fields label:nth-child(3){grid-column:1/-1}
   .doc-top .screen{display:none}
@@ -177,8 +185,94 @@ label.f input,label.f select,label.f textarea{color:var(--ink);font-weight:500;f
   main.has-bar{padding-bottom:90px}
   input,select,textarea{font-size:16px}
 }
-@media (max-width:640px) and (hover:none){#d-cam{display:inline-flex}}
+@media (max-width:700px) and (hover:none){#d-cam{display:inline-flex}}
 .cam video{width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover}
+
+/* search suggestions, stepper, tabbar */
+.search-wrap{position:relative;flex:1;display:flex}
+.search-wrap #d-code{flex:1}
+.sugg{position:absolute;top:calc(100% + 4px);right:0;left:0;z-index:15;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.18);overflow:hidden;max-height:min(60vh,420px);overflow-y:auto}
+.sugg button{display:flex;width:100%;justify-content:space-between;gap:10px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:none;text-align:right;cursor:pointer}
+.sugg button:last-child{border-bottom:0}
+.sugg button.on,.sugg button:hover{background:var(--accent-soft)}
+.sugg small{color:var(--muted)}
+.stepper{display:flex;gap:4px;align-items:center}
+.stepper button{display:none;width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);font-size:1.2rem;font-weight:800;cursor:pointer;flex:none}
+.tabbar,.quick,.only-m{display:none}
+.btn.wa{background:#1f9d55;border-color:#1f9d55;color:#fff}
+
+@media (max-width:700px){
+  body{font-size:15px;-webkit-tap-highlight-color:transparent}
+  .side{padding:calc(8px + env(safe-area-inset-top)) 12px 8px;justify-content:space-between}
+  .side .nav{display:none}
+  .side-foot{display:block;padding:0}.side-foot #save-state{display:none}.side-foot button{margin:0}
+  .brand .logo{width:32px;height:32px;font-size:1rem}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .tabbar a,.tabbar button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;border:0;background:none;color:var(--muted);text-decoration:none;font-size:.72rem;font-weight:700;border-radius:10px;cursor:pointer}
+  .tabbar span{font-size:1.3rem;line-height:1.2}
+  .tabbar a.on{color:var(--accent);background:var(--accent-soft)}
+  .tabbar .tab-main span{background:var(--accent);color:#fff;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin-top:-20px;box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 45%,transparent)}
+  main{padding:12px 12px calc(84px + env(safe-area-inset-bottom))}
+  main.has-bar{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+  .mbar{bottom:calc(62px + env(safe-area-inset-bottom))!important;padding-bottom:10px!important;border-radius:14px 14px 0 0}
+  .toasts{bottom:calc(150px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:none}
+  .head{margin-bottom:12px}.head h1{font-size:1.25rem}.head .sub{font-size:.82rem}
+  .head .tools{width:100%}
+  .head .tools input,.head .tools select{flex:1;min-width:120px}
+  .head .tools label.f{flex:1;min-width:130px}
+  .banner{padding:8px 12px;font-size:.85rem}
+  .card{padding:12px}
+  .kpis{grid-template-columns:1fr 1fr!important;gap:8px}
+  .kpi{padding:10px 12px}.kpi b{font-size:1.1rem}
+  .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .quick a{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-decoration:none;font-size:.78rem;font-weight:700;text-align:center}
+  .quick a span{font-size:1.4rem}
+  .only-m{display:block}.only-d{display:none!important}
+  .btn{min-height:42px}.btn.sm{min-height:36px;padding:.3em .8em}
+  .bars{height:150px;gap:3px}.bar small{font-size:.58rem}
+  /* doc on phone */
+  .doc-fields label:nth-child(3){order:-1;grid-column:1/-1}
+  .doc-fields label:nth-child(1){display:none}
+  .doc-fields label:nth-child(2){grid-column:auto}
+  .doc-head{flex-wrap:nowrap;margin-bottom:8px}.doc-head .sub{display:none}.doc-head .tools{width:auto}
+  .doc .addbar{scroll-margin-top:70px}
+  .side-foot #theme-btn span{display:none}
+  body.kb .tabbar,body.kb .mbar{display:none!important}
+  body.kb main{padding-bottom:20px}
+  /* card tables in two columns */
+  .tbl-wrap .tbl:not(.lines) tbody tr,.tbl-wrap .tbl:not(.lines) tfoot tr{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}
+  .addbar .search-wrap{flex-basis:100%}
+  .tbl:not(.lines) td:first-child,.tbl:not(.lines) td.wrap,.tbl:not(.lines) td:has(> .acts),.tbl:not(.lines) td[colspan],.tbl:not(.lines) td.empty{grid-column:1/-1}
+  .stepper button{display:grid;place-items:center}
+  .stepper input{text-align:center}
+  .lines td.c-qty{grid-area:3/1/4/3}.lines td.c-colis{grid-area:3/3/4/5}.lines td.c-price{grid-area:4/1/5/2}.lines td.c-amt{grid-area:4/2/5/4;text-align:center}.lines td.c-prf{grid-area:4/4/5/5}
+  .lines td.c-prf{font-size:.8rem}
+  .pay label.f{width:auto;flex:1;min-width:120px}
+  .actions .btn{flex:1}
+  /* tables become cards */
+  .tbl-wrap:has(> .tbl:not(.lines)){border:0;background:none;overflow:visible;max-height:none!important}
+  .tbl:not(.lines) thead{display:none}
+  .tbl:not(.lines),.tbl:not(.lines) tbody,.tbl:not(.lines) tfoot{display:block}
+  .tbl:not(.lines) tr{display:block;border:1px solid var(--line);border-radius:12px;margin:0 0 8px;padding:6px 12px;background:var(--surface)}
+  .tbl:not(.lines) tbody tr:hover{background:var(--surface)}
+  .tbl:not(.lines) tfoot tr{background:var(--accent-soft);border-color:transparent}
+  .tbl:not(.lines) tfoot td{background:none}
+  .tbl:not(.lines) td{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;padding:4px 0;white-space:normal;min-width:0;direction:rtl;text-align:left}
+  .tbl:not(.lines) td::before{content:attr(data-l);color:var(--muted);font-weight:700;font-size:.8rem;text-align:right;flex:none}
+  .tbl:not(.lines) td:not([data-l])::before,.tbl:not(.lines) td[data-l=""]::before{content:none}
+  .tbl:not(.lines) td:first-child{font-size:1rem;font-weight:700;border-bottom:1px dashed var(--line);padding-bottom:6px;margin-bottom:2px}
+  .tbl:not(.lines) td:empty{display:none}
+  .tbl:not(.lines) td.wrap{min-width:0}
+  .tbl:not(.lines) .acts{justify-content:flex-start;flex-wrap:wrap;width:100%;padding-top:4px}
+  .tbl:not(.lines) td:has(> .acts){border-top:1px dashed var(--line);margin-top:4px}
+  .tbl:not(.lines) td.empty{display:block}
+  /* bottom-sheet dialogs */
+  dialog,dialog.wide{width:100%;max-width:100%;margin:auto 0 0;border-radius:18px 18px 0 0;max-height:92vh}
+  .m-body{max-height:calc(92vh - 58px);padding:14px 14px calc(18px + env(safe-area-inset-bottom))}
+  .m-foot{flex-wrap:wrap}.m-foot .btn{flex:1}
+  dialog[open]{animation:sheet .22s ease}
+}
+@keyframes sheet{from{transform:translateY(40px);opacity:.4}}
 
 /* dialog */
 dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100% - 24px));background:var(--surface);color:var(--ink);box-shadow:0 30px 60px rgba(0,0,0,.3)}
@@ -244,7 +338,7 @@ dialog::backdrop{background:rgba(10,15,30,.5)}
     </nav>
     <div class="side-foot">
       <div id="save-state">✓ محفوظ على هذا الجهاز</div>
-      <button id="theme-btn">🌓 الوضع الليلي</button>
+      <button id="theme-btn" aria-label="الوضع الليلي">🌓 <span>الوضع الليلي</span></button>
     </div>
   </aside>
   <main id="view"></main>
@@ -254,6 +348,13 @@ dialog::backdrop{background:rgba(10,15,30,.5)}
   <div class="m-head"><h3 id="m-title"></h3><button class="btn icon" id="m-close" aria-label="إغلاق">✕</button></div>
   <div class="m-body" id="m-body"></div>
 </dialog>
+<nav class="tabbar" id="tabbar" aria-label="التنقل">
+  <a href="#/dash" data-r="dash"><span>🏠</span>الرئيسية</a>
+  <a href="#/products" data-r="products"><span>📦</span>المخزون</a>
+  <a href="#/sale" data-r="sale" class="tab-main"><span>🧾</span>بيع</a>
+  <a href="#/clients" data-r="clients"><span>👥</span>الزبائن</a>
+  <button type="button" id="tab-more"><span>☰</span>المزيد</button>
+</nav>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="print"></div>
 
@@ -268,13 +369,14 @@ const num = v => { const n = parseFloat(String(v ?? "").replace(/\s/g, "").repla
 const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
 const pad = n => String(n).padStart(2, "0");
 const pad6 = n => String(n).padStart(6, "0");
-function m(n){ n = r2(n); const [i, d] = Math.abs(n).toFixed(2).split("."); return (n < 0 ? "-" : "") + i.replace(/\B(?=(\d{3})+$)/g, " ") + "." + d; }
+function m(n){ n = r2(n); const [i, d] = Math.abs(n).toFixed(2).split("."); return (n < 0 ? "-" : "") + i.replace(/\B(?=(\d{3})+$)/g, "\u00A0") + "." + d; }
 const DA = n => `<span class="n">${m(n)}</span>`;
 const qf = n => String(r2(n));
 const toLocal = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const today = () => toLocal(new Date()).slice(0, 10);
 const addDays = (ymd, k) => { const d = new Date(ymd + "T12:00"); d.setDate(d.getDate() + k); return toLocal(d).slice(0, 10); };
 const fdate = s => { if (!s) return ""; const [d, t] = s.split("T"); const [y, mo, da] = d.split("-"); return `${da}/${mo}/${y}${t ? " " + t.slice(0, 5) : ""}`; };
+const isTouch = matchMedia("(hover:none) and (pointer:coarse)").matches;
 const MODES = { espece:"نقدًا", cheque:"شيك", virement:"تحويل", credit:"بالدَّين" };
 const CHARGE_CATS = ["إيجار","كهرباء وماء","أجور","نقل ووقود","صيانة","ضرائب ورسوم","خسائر / تالف","أخرى"];
 
@@ -401,7 +503,7 @@ const routes = {
 };
 function route(){
   const r = routes[curRoute()] ? curRoute() : "dash";
-  $$("#nav a").forEach(a => a.classList.toggle("on", a.dataset.r === r));
+  $$("#nav a, #tabbar a").forEach(a => a.classList.toggle("on", a.dataset.r === r));
   $("#company-name").textContent = db.settings.name;
   view.classList.remove("has-bar");
   view.innerHTML = demoBanner();
@@ -433,7 +535,7 @@ function modal(title, body, onOpen, wide){
   dlg.classList.toggle("wide", !!wide);
   if (!dlg.open) dlg.showModal();
   onOpen && onOpen($("#m-body"));
-  const first = $("#m-body input:not([type=hidden]):not([type=checkbox]), #m-body select"); first && first.focus();
+  const first = $("#m-body input:not([type=hidden]):not([type=checkbox]):not([readonly]), #m-body select"); first && !isTouch && first.focus();
 }
 function closeModal(){ if (dlg.open) dlg.close(); }
 $("#m-close").onclick = closeModal;
@@ -459,7 +561,11 @@ function viewDash(el){
   el.innerHTML = `
   ${backupOld ? `<div class="banner"><span>💾 لم تحفظ نسخة احتياطية منذ أكثر من أسبوع. بياناتك موجودة في هذا المتصفح فقط.</span><a class="btn sm" href="#/settings">نسخة احتياطية الآن</a></div>` : ""}
   <div class="head"><div><h1>لوحة القيادة</h1><div class="sub">${fdate(t)} — ${esc(db.settings.name)}</div></div>
-    <div class="tools"><a class="btn primary big" href="#/sale">🧾 بيع جديد <kbd>F1</kbd></a></div></div>
+    <div class="tools only-d"><a class="btn primary big" href="#/sale">🧾 بيع جديد <kbd>F1</kbd></a></div></div>
+  <div class="quick">
+    <a href="#/journal"><span>📒</span>سجل المبيعات</a><a href="#/purchase"><span>📥</span>شراء</a>
+    <a href="#/cash"><span>💰</span>الخزينة</a><a href="#/charges"><span>💸</span>مصروف</a>
+  </div>
   <div class="kpis">
     <div class="card kpi"><small>مبيعات اليوم</small><b>${DA(sum(sToday, s => s.total))}</b><span>${sToday.length} وصل</span></div>
     <div class="card kpi"><small>ربح اليوم</small><b class="pos">${DA(sum(sToday, docProfit))}</b><span>قبل المصاريف</span></div>
@@ -503,7 +609,7 @@ function viewDoc(type, el){
   const C = DOC[type], d = draft(type), parties = partyColl(C.kind), isSale = type === "sale";
   const editRec = d.editingId && db[C.coll].find(x => x.id === d.editingId);
   el.innerHTML = `
-  <div class="head"><div><h1>${editRec ? "✏️ تعديل " : ""}${C.title}</h1>
+  <div class="head doc-head"><div><h1>${editRec ? "✏️ تعديل " : ""}${C.title}</h1>
     <div class="sub">${editRec ? `أنت تعدّل الوصل رقم ${pad6(editRec.no)}` : "امسح الباركود أو اكتب الكود ثم Enter. F3 للتأكيد."}</div></div>
     <div class="tools">${isSale ? `<button class="btn" id="d-held">⏸ المعلّقة (${db.held.length})</button>` : ""}</div></div>
   <div class="doc">
@@ -524,11 +630,10 @@ function viewDoc(type, el){
     </div>
     <div class="card">
       <div class="addbar">
-        <input id="d-code" list="plist" placeholder="🔍 الكود / الباركود / اسم المنتج ثم Enter" autocomplete="off" aria-label="بحث عن منتج">
+        <div class="search-wrap"><input id="d-code" placeholder="🔍 ابحث بالاسم أو الكود أو الباركود" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="بحث عن منتج" role="combobox" aria-expanded="false" aria-controls="d-sugg"><div class="sugg" id="d-sugg" role="listbox" hidden></div></div>
         <input id="d-qty" type="number" value="1" min="0" step="any" aria-label="الكمية" title="الكمية">
         <button class="btn" id="d-cam" type="button" aria-label="مسح الباركود بالكاميرا">📷 كاميرا</button>
         <button class="btn primary" id="d-add">إدراج ⏎</button>
-        <datalist id="plist">${db.products.map(p => `<option value="${esc(p.code)}">${esc(p.name)} — ${m(isSale ? p.sell : p.buy)} (مخزون ${qf(p.stock)})</option>`).join("")}</datalist>
       </div>
       <div class="tbl-wrap"><table class="tbl lines"><thead><tr><th>#</th><th>الكود</th><th>المنتج</th><th class="n">المخزون</th><th class="n">طرود</th><th class="n">التعبئة</th><th class="n">الكمية</th><th class="n">${isSale ? "سعر البيع" : "سعر الشراء"}</th><th class="n">المبلغ</th>${isSale && db.settings.showProfit ? `<th class="n">الربح</th>` : ""}<th></th></tr></thead>
         <tbody id="d-lines"></tbody></table></div>
@@ -575,7 +680,7 @@ function viewDoc(type, el){
         <td class="n c-stock ${p && p.stock <= 0 ? "neg" : "muted"}" data-l="المخزون">${p ? qf(p.stock) : "—"}</td>
         <td class="c-colis" data-l="طرود${col ? " ×" + col : ""}">${col ? `<input type="number" min="0" step="any" data-i="${i}" data-f="colis" value="${qf(l.qty / col)}" aria-label="عدد الطرود">` : `<span class="muted">—</span>`}</td>
         <td class="n muted c-col">${col || "—"}</td>
-        <td class="c-qty" data-l="الكمية"><input type="number" min="0" step="any" data-i="${i}" data-f="qty" value="${qf(l.qty)}" aria-label="الكمية"></td>
+        <td class="c-qty" data-l="الكمية"><div class="stepper"><button type="button" data-step="1" data-si="${i}" aria-label="زيادة">+</button><input type="number" min="0" step="any" data-i="${i}" data-f="qty" value="${qf(l.qty)}" aria-label="الكمية"><button type="button" data-step="-1" data-si="${i}" aria-label="إنقاص">−</button></div></td>
         <td class="c-price" data-l="السعر"><input type="number" min="0" step="any" data-i="${i}" data-f="price" value="${qf(l.price)}" aria-label="السعر"></td>
         <td class="n c-amt" data-l="المبلغ"><b data-amt="${i}">${m(l.qty * l.price)}</b></td>
         ${isSale && db.settings.showProfit ? `<td class="n muted c-prf" data-l="الربح" data-prf="${i}">${m(l.qty * (l.price - (l.buy || 0)))}</td>` : ""}
@@ -584,6 +689,7 @@ function viewDoc(type, el){
     refreshTotals();
   }
   function addLine(p, qty){
+    if (qty === 1 && p.colisage > 1 && num($("#d-qty").value) === 1) qty = p.colisage; // طرد واحد افتراضيًا
     const ex = d.lines.find(l => l.pid === p.id);
     if (ex) ex.qty = r2(ex.qty + qty);
     else d.lines.push({pid:p.id, code:p.code, name:p.name, qty, price:C.priceOf(p, cur()), buy:p.buy, colisage:p.colisage || 1});
@@ -614,9 +720,33 @@ function viewDoc(type, el){
     }
     addLine(p, qty); resetAdd();
   }
-  function resetAdd(){ $("#d-code").value = ""; $("#d-qty").value = 1; $("#d-code").focus(); }
+  function resetAdd(){ $("#d-code").value = ""; $("#d-qty").value = 1; hideSugg(); if (!isTouch) $("#d-code").focus(); else $("#d-code").blur(); }
 
-  $("#d-code").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); addFromInput(); } });
+  // اقتراحات البحث
+  const sugg = $("#d-sugg"); let sItems = [], sIdx = -1;
+  function hideSugg(){ sugg.hidden = true; sItems = []; sIdx = -1; $("#d-code").setAttribute("aria-expanded", "false"); }
+  function showSugg(){
+    const q = $("#d-code").value.trim().toLowerCase();
+    if (!q){ hideSugg(); return; }
+    sItems = db.products.filter(x => x.code.startsWith(q) || x.name.toLowerCase().includes(q)).slice(0, 8); sIdx = -1;
+    if (!sItems.length){ sugg.innerHTML = `<div class="empty" style="padding:14px">لا يوجد منتج بهذا الاسم</div>`; }
+    else sugg.innerHTML = sItems.map((x, i) => `<button type="button" role="option" data-si2="${i}"><span><b>${esc(x.name)}</b><br><small class="n">${esc(x.code)}</small></span><span style="text-align:left"><b class="n">${m(C.priceOf(x, cur()))}</b><br><small class="${x.stock <= 0 ? "neg" : ""}">مخزون ${qf(x.stock)}</small></span></button>`).join("");
+    sugg.hidden = false; $("#d-code").setAttribute("aria-expanded", "true");
+  }
+  $("#d-code").addEventListener("input", showSugg);
+  $("#d-code").addEventListener("focus", () => { if (isTouch) setTimeout(() => $(".addbar").scrollIntoView({block:"start", behavior:"smooth"}), 250); });
+  $("#d-code").addEventListener("blur", () => setTimeout(hideSugg, 180));
+  sugg.addEventListener("pointerdown", e => e.preventDefault());
+  sugg.addEventListener("click", e => { const b = e.target.closest("[data-si2]"); if (!b) return; addLine(sItems[+b.dataset.si2], num($("#d-qty").value) || 1); resetAdd(); });
+  $("#d-code").addEventListener("keydown", e => {
+    if (!sugg.hidden && sItems.length && (e.key === "ArrowDown" || e.key === "ArrowUp")){
+      e.preventDefault(); sIdx = (sIdx + (e.key === "ArrowDown" ? 1 : -1) + sItems.length) % sItems.length;
+      $$("[data-si2]", sugg).forEach((b, i) => b.classList.toggle("on", i === sIdx)); return;
+    }
+    if (e.key === "Escape") return hideSugg();
+    if (e.key === "Enter"){ e.preventDefault();
+      if (sIdx >= 0 && sItems[sIdx]){ addLine(sItems[sIdx], num($("#d-qty").value) || 1); resetAdd(); } else { hideSugg(); addFromInput(); } }
+  });
   $("#d-qty").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); addFromInput(); } });
   $("#d-add").onclick = addFromInput;
   tbody.addEventListener("input", e => {
@@ -630,7 +760,11 @@ function viewDoc(type, el){
     refreshTotals(); saveDraft();
   });
   tbody.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input")){ e.preventDefault(); $("#d-code").focus(); } });
-  tbody.addEventListener("click", e => { const b = e.target.closest("[data-del]"); if (b){ d.lines.splice(+b.dataset.del, 1); renderLines(); saveDraft(); } });
+  tbody.addEventListener("click", e => {
+    const b = e.target.closest("[data-del]"); if (b){ d.lines.splice(+b.dataset.del, 1); renderLines(); saveDraft(); return; }
+    const st = e.target.closest("[data-step]");
+    if (st){ const l = d.lines[+st.dataset.si]; l.qty = Math.max(0, r2(l.qty + +st.dataset.step)); if (l.qty === 0 && confirm(`حذف «${l.name}» من الوصل؟`)) d.lines.splice(+st.dataset.si, 1); renderLines(); saveDraft(); }
+  });
   $("#d-party").onchange = e => {
     d.partyId = e.target.value;
     if (isSale && d.lines.length){ const pt = cur(); d.lines.forEach(l => { const p = prod(l.pid); if (p) l.price = C.priceOf(p, pt); }); toast("تم تحديث الأسعار حسب نوع الزبون"); }
@@ -650,7 +784,7 @@ function viewDoc(type, el){
   const hb = $("#d-hold"); hb && (hb.onclick = holdDoc);
   const hl = $("#d-held"); hl && (hl.onclick = showHeld);
   renderLines();
-  $("#d-code").focus();
+  if (!isTouch) $("#d-code").focus();
 }
 
 function newDoc(type){
@@ -698,10 +832,11 @@ function commitDoc(type){
   if (old) coll[coll.indexOf(old)] = rec; else coll.push(rec);
   db.drafts[type] = blank(type); save(); route();
   modal(`✓ تم حفظ الوصل رقم ${pad6(rec.no)}`, `<p style="font-size:1.1rem">الإجمالي: <b class="n">${m(rec.total)}</b> — المدفوع: <b class="n">${m(rec.paid)}</b>${rec.total > rec.paid ? ` — الباقي دَين: <b class="neg n">${m(rec.total - rec.paid)}</b>` : ""}</p>
-    <div class="m-foot"><button class="btn" id="pt">🧾 طباعة تذكرة</button><button class="btn primary" id="pa">🖨 طباعة A4</button><button class="btn ok" id="pn">وصل جديد ⏎</button></div>`, b => {
+    <div class="m-foot">${type === "sale" ? `<button class="btn wa" id="pw">📲 واتساب</button>` : ""}<button class="btn" id="pt">🧾 تذكرة</button><button class="btn primary" id="pa">🖨 A4</button><button class="btn ok" id="pn">وصل جديد ⏎</button></div>`, b => {
+    const w = $("#pw", b); w && (w.onclick = () => sendWhatsApp(type, rec));
     $("#pa", b).onclick = () => { closeModal(); printDoc(type, rec, "a4"); };
     $("#pt", b).onclick = () => { closeModal(); printDoc(type, rec, "ticket"); };
-    $("#pn", b).onclick = () => { closeModal(); $("#d-code") && $("#d-code").focus(); };
+    $("#pn", b).onclick = () => { closeModal(); !isTouch && $("#d-code") && $("#d-code").focus(); };
     $("#pn", b).focus();
   });
 }
@@ -799,6 +934,23 @@ function viewJournal(type, el){
     if (ds.d) deleteDoc(type, ds.d);
   });
 }
+function waPhone(ph){ const d = String(ph || "").replace(/\D/g, ""); if (/^0[5-7]\d{8}$/.test(d)) return "213" + d.slice(1); if (/^213\d{9}$/.test(d)) return d; if (/^00213\d{9}$/.test(d)) return d.slice(2); return ""; }
+function sendWhatsApp(type, s){
+  const p = party("client", s.partyId), st = db.settings;
+  const bal = p ? balance("client", p.id, s.date) : 0;
+  const lines = [
+    `*${st.name}*`, `وصل تسليم رقم ${pad6(s.no)} — ${fdate(s.date)}`, "",
+    ...s.lines.map(l => `• ${l.name} × ${qf(l.qty)} = ${m(l.qty * l.price)}`), "",
+    s.remise ? `التخفيض: -${m(s.remise)}` : "",
+    `*الإجمالي: ${m(s.total)} ${st.currency}*`,
+    p ? `المدفوع: ${m(s.paid)}` : "",
+    p && s.total > s.paid ? `الباقي: ${m(s.total - s.paid)}` : "",
+    p ? `رصيدك الحالي: ${m(bal)} ${st.currency}` : "",
+    "", "شكرًا لتعاملكم معنا 🙏"
+  ].filter((l, i, a) => l !== "" || (a[i - 1] !== "" && i > 0));
+  const phone = p ? waPhone(p.phone) : "";
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank", "noopener");
+}
 function showDoc(type, s){
   const C = DOC[type], p = party(C.kind, s.partyId);
   modal(`${C.prefix}-${pad6(s.no)} — ${fdate(s.date)}`, `
@@ -806,7 +958,8 @@ function showDoc(type, s){
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>المنتج</th><th class="n">الكمية</th><th class="n">السعر</th><th class="n">المبلغ</th></tr></thead>
     <tbody>${s.lines.map(l => `<tr><td class="wrap">${esc(l.name)}</td><td class="n">${qf(l.qty)}</td><td class="n">${m(l.price)}</td><td class="n">${m(l.qty * l.price)}</td></tr>`).join("")}</tbody>
     <tfoot>${s.remise ? `<tr><td colspan="3">تخفيض</td><td class="n">-${m(s.remise)}</td></tr>` : ""}<tr><td colspan="3">الإجمالي</td><td class="n">${m(s.total)}</td></tr><tr><td colspan="3">المدفوع</td><td class="n">${m(s.paid)}</td></tr></tfoot></table></div>
-    <div class="m-foot"><button class="btn" id="se">تعديل</button><button class="btn" id="st">🧾 تذكرة</button><button class="btn primary" id="sp">🖨 طباعة A4</button></div>`, b => {
+    <div class="m-foot">${type === "sale" ? `<button class="btn wa" id="sw">📲 واتساب</button>` : ""}<button class="btn" id="se">تعديل</button><button class="btn" id="st">🧾 تذكرة</button><button class="btn primary" id="sp">🖨 A4</button></div>`, b => {
+    const w = $("#sw", b); w && (w.onclick = () => sendWhatsApp(type, s));
     $("#sp", b).onclick = () => { closeModal(); printDoc(type, s, "a4"); };
     $("#st", b).onclick = () => { closeModal(); printDoc(type, s, "ticket"); };
     $("#se", b).onclick = () => { closeModal(); editDoc(type, s.id); };
@@ -1244,8 +1397,43 @@ $("#theme-btn").onclick = () => {
 };
 try { const th = localStorage.getItem("dafter:theme"); if (th) document.documentElement.dataset.theme = th; } catch {}
 if (!storageOk) toast("⚠ المتصفح لا يسمح بالحفظ هنا. افتح الملف في Chrome عادي (ليس وضع التصفح الخفي).", true);
+// تسميات الجداول لعرض البطاقات على الهاتف + لوحة أرقام مناسبة
+function enhance(root){
+  $$("table.tbl:not(.lines)", root).forEach(t => {
+    const heads = [...(t.tHead ? t.tHead.rows[0].cells : [])].map(c => c.textContent.trim());
+    [...t.tBodies, t.tFoot].filter(Boolean).forEach(sec => [...sec.rows].forEach(r => {
+      let col = 0; [...r.cells].forEach(c => { if (!c.hasAttribute("data-l")) c.setAttribute("data-l", c.colSpan > 1 ? "" : (heads[col] || "")); col += c.colSpan; });
+    }));
+  });
+  $$('input[type="number"]', root).forEach(i => { if (!i.inputMode) i.inputMode = "decimal"; });
+  $$('input[type="tel"]', root).forEach(i => i.inputMode = "tel");
+}
+const mo = new MutationObserver(muts => { for (const mu of muts) for (const n of mu.addedNodes) if (n.nodeType === 1) enhance(n.parentNode || n); });
+mo.observe(view, {childList:true, subtree:true}); mo.observe($("#m-body"), {childList:true, subtree:true});
+
+// إخفاء الأشرطة السفلية عند ظهور لوحة المفاتيح
+if (isTouch){
+  document.addEventListener("focusin", e => { if (e.target.matches("input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea")) document.body.classList.add("kb"); });
+  document.addEventListener("focusout", () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches("input,textarea")) document.body.classList.remove("kb"); }, 60));
+}
+// قائمة «المزيد»
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; });
+$("#tab-more").onclick = () => {
+  modal("القائمة", `<div class="pick-list">${$$("#nav a").map(a => `<button data-go="${a.getAttribute("href")}"><span>${a.childNodes[0].textContent.trim()}</span><span>‹</span></button>`).join("")}
+    <button id="mm-theme"><span>🌓 الوضع الليلي / النهاري</span><span></span></button>
+    ${installEvt ? `<button id="mm-install"><span>📲 تثبيت التطبيق على الهاتف</span><span></span></button>` : ""}</div>`, b => {
+    $$("[data-go]", b).forEach(x => x.onclick = () => { closeModal(); location.hash = x.dataset.go; });
+    $("#mm-theme", b).onclick = () => { $("#theme-btn").click(); };
+    const ins = $("#mm-install", b); ins && (ins.onclick = async () => { closeModal(); installEvt.prompt(); await installEvt.userChoice; installEvt = null; });
+  });
+};
+// تطبيق يعمل بدون إنترنت + حماية البيانات من المسح التلقائي
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 save();
 route();
+enhance(document);
 </script>
 </body>
 </html>

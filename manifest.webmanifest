@@ -1,0 +1,18 @@
+{
+  "name": "دفتر التاجر",
+  "short_name": "دفتر التاجر",
+  "description": "تسيير المبيعات والمخزون والزبائن",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "dafter.html#/dash",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#13213f",
+  "theme_color": "#13213f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
