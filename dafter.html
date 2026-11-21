@@ -387,9 +387,30 @@ let storageOk = true;
 let db = load();
 function load(){
   try { const r = localStorage.getItem(KEY); if (r) return normalize(JSON.parse(r)); } catch(e){ storageOk = false; }
-  return seed();
+  return cleanStart();
+}
+// بداية نظيفة: منتجات التاجر بأسعار البيع الحقيقية فقط، بدون أي أرقام تجريبية
+function cleanStart(){
+  const d = emptyDb(); d._rev = Date.now();
+  d.families = [{id:"f1",name:"أكياس كوبتان"},{id:"f2",name:"أكياس مطبوعة"},{id:"f3",name:"أكياس بلاستيك"}];
+  const P = (code, name, f, sell, col=1) => ({id:uid(), code, name, familyId:f, buy:0, sell, sellGros:0, stock:0, colisage:col, min:0});
+  d.products = [
+    P("1000000000702","KOBTAN NOIR PK/60 N (7)","f1",750),
+    P("1000000005127","KOBTAN NOIR PK/70 N (8)","f1",840),
+    P("1000000005844","KOBTAN IMPR P60","f2",980),
+    P("1000000008319","Cosmetique 20/30 parfume","f2",900),
+    P("1000000000986","GOLDEN BIBA GM","f3",195),
+    P("1000000008258","15K Power Bag 1 Choix","f3",170,10),
+    P("1000000007824","3K P70","f3",800),
+    P("1000000001983","Sky GM","f3",380),
+    P("1000000007374","Sac Pub Korozo","f2",500),
+    P("1000000004144","KOROZO MY","f3",330),
+    P("1000000000962","25K couleur 2 Choix","f3",1305),
+  ];
+  return d;
 }
 function normalize(d){
+  if (d && d.settings && d.settings.demo) return cleanStart(); // استبدال البيانات التجريبية القديمة
   const base = emptyDb();
   for (const k in base) if (d[k] === undefined) d[k] = base[k];
   d.settings = Object.assign(base.settings, d.settings);
@@ -430,67 +451,6 @@ function balance(kind, id, upto, excludeDocId){
   for (const x of db.payments)
     if (x.kind === kind && x.partyId === id && (!upto || x.date <= upto)) b -= x.amount;
   return r2(b);
-}
-
-/* ================= بيانات تجريبية ================= */
-function seed(){
-  const d = emptyDb(); d.settings.demo = true;
-  d.families = [{id:"f1",name:"أكياس كوبتان"},{id:"f2",name:"أكياس مطبوعة"},{id:"f3",name:"أكياس بلاستيك"},{id:"f4",name:"تغليف وكرتون"}];
-  const P = (code, name, f, buy, sell, gros, stock, col=1, min=10) => ({id:uid(), code, name, familyId:f, buy, sell, sellGros:gros, stock, colisage:col, min});
-  d.products = [
-    P("1000000000702","KOBTAN NOIR PK/60 N (7)","f1",610,750,720,160,1,20),
-    P("1000000005127","KOBTAN NOIR PK/70 N (8)","f1",690,840,810,120,1,20),
-    P("1000000005844","KOBTAN IMPR P60","f2",800,980,950,60,1,10),
-    P("1000000008319","Cosmetique 20/30 parfume","f2",720,900,870,90,1,15),
-    P("1000000000986","GOLDEN BIBA GM","f3",150,195,185,400,10,50),
-    P("1000000008258","15K Power Bag 1 Choix","f3",130,170,160,500,10,50),
-    P("1000000007824","3K P70","f3",650,800,770,70,1,10),
-    P("1000000001983","Sky GM","f3",300,380,360,8,1,15),
-    P("1000000007374","Sac Pub Korozo","f2",390,500,480,45,1,10),
-    P("1000000004144","KOROZO MY","f3",260,330,315,150,1,20),
-    P("1000000000962","25K couleur 2 Choix","f3",1050,1305,1260,30,1,8),
-    P("1000000009001","Carton 40x30x30","f4",95,130,120,5,25,30),
-    P("1000000009002","Scotch transparent 48mm","f4",85,120,110,240,6,36),
-    P("1000000009003","Film étirable 50cm","f4",900,1150,1100,40,1,10),
-  ];
-  d.clients = [
-    {id:uid(), name:"زبون تجريبي — محل حلويات", phone:"0550000001", address:"", type:"gros", opening:0},
-    {id:uid(), name:"زبون تجريبي — سوبيرات", phone:"0660000002", address:"", type:"gros", opening:5000},
-    {id:uid(), name:"زبون تجريبي — مطعم", phone:"0770000003", address:"", type:"detail", opening:0},
-    {id:uid(), name:"زبون تجريبي — صيدلية", phone:"", address:"", type:"detail", opening:0},
-  ];
-  d.suppliers = [
-    {id:uid(), name:"مورّد تجريبي — مصنع أكياس", phone:"0550000010", address:"", opening:0},
-    {id:uid(), name:"مورّد تجريبي — كرتون", phone:"", address:"", opening:0},
-  ];
-  // مبيعات تجريبية على 14 يومًا
-  let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
-  const t0 = today();
-  for (let k = 13; k >= 0; k--){
-    const day = addDays(t0, -k), n = 1 + Math.floor(rnd() * 4);
-    for (let j = 0; j < n; j++){
-      const c = rnd() < .25 ? null : d.clients[Math.floor(rnd() * d.clients.length)];
-      const lines = []; const nl = 1 + Math.floor(rnd() * 4);
-      for (let q = 0; q < nl; q++){
-        const p = d.products[Math.floor(rnd() * d.products.length)];
-        if (lines.some(l => l.pid === p.id)) continue;
-        const qty = p.colisage > 1 ? p.colisage * (1 + Math.floor(rnd() * 3)) : 1 + Math.floor(rnd() * 6);
-        lines.push({pid:p.id, code:p.code, name:p.name, qty, price:c && c.type === "gros" ? p.sellGros : p.sell, buy:p.buy, colisage:p.colisage});
-      }
-      const t = docTotals({lines, remise:0});
-      const paid = c && rnd() < .35 ? r2(Math.floor(t.total * .5 / 100) * 100) : t.total;
-      d.sales.push({id:uid(), no:d.settings.nextBL++, date:`${day}T${pad(9 + Math.floor(rnd() * 9))}:${pad(Math.floor(rnd() * 60))}`,
-        partyId:c ? c.id : "", mode:paid < t.total ? "credit" : "espece", lines, sub:t.sub, remise:0, total:t.total, paid, note:""});
-      for (const l of lines){ const p = d.products.find(x => x.id === l.pid); p.stock -= l.qty; if (p.stock < 0) p.stock += 100; }
-    }
-  }
-  d.sales.sort((a, b) => a.date < b.date ? -1 : 1).forEach((x, i) => x.no = i + 1);
-  d.purchases.push({id:uid(), no:d.settings.nextBR++, date:addDays(t0, -10) + "T10:00", partyId:d.suppliers[0].id, mode:"credit",
-    lines:[{pid:d.products[0].id, code:d.products[0].code, name:d.products[0].name, qty:50, price:610, colisage:1}], sub:30500, remise:0, total:30500, paid:20000, note:""});
-  d.payments.push({id:uid(), kind:"client", partyId:d.clients[1].id, date:addDays(t0, -3) + "T15:00", amount:3000, mode:"espece", note:"دفعة"});
-  d.charges.push({id:uid(), date:addDays(t0, -8) + "T09:00", label:"كراء المحل", category:"إيجار", amount:25000});
-  d.charges.push({id:uid(), date:addDays(t0, -2) + "T11:00", label:"وقود الشاحنة", category:"نقل ووقود", amount:3000});
-  return d;
 }
 
 /* ================= التوجيه ================= */
@@ -558,11 +518,19 @@ function viewDash(el){
   const top = {}; sMonth.forEach(s => s.lines.forEach(l => { top[l.name] = (top[l.name] || 0) + l.qty * l.price; }));
   const topList = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const debtors = db.clients.map(c => [c, balance("client", c.id)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  const backupOld = !cloud.ready && !db.settings.demo && (!db.settings.lastBackup || (Date.now() - db.settings.lastBackup) > 7 * 864e5);
+  const noBuy = db.products.filter(p => !(p.buy > 0)).length;
+  const setup = !db.sales.length ? `<div class="card" style="margin-bottom:14px"><h2>👋 ابدأ في 3 خطوات</h2>
+    <div class="list-row"><span>1. اكتب اسم مؤسستك ومعلوماتها</span><a class="btn sm" href="#/settings">الإعدادات</a></div>
+    <div class="list-row"><span>2. أدخل سعر الشراء والكمية لكل منتج (زر «تعديل»)</span><a class="btn sm" href="#/products">المخزون</a></div>
+    <div class="list-row"><span>3. أضف زبائنك وديونهم القديمة</span><a class="btn sm" href="#/clients">الزبائن</a></div></div>` : "";
+  const firstSale = db.sales.reduce((a, x) => !a || x.date < a ? x.date : a, "");
+  const backupOld = !cloud.ready && firstSale && (db.settings.lastBackup ? Date.now() - db.settings.lastBackup > 7 * 864e5 : firstSale.slice(0, 10) <= addDays(today(), -7));
   el.innerHTML = `
-  ${backupOld ? `<div class="banner"><span>💾 لم تحفظ نسخة احتياطية منذ أكثر من أسبوع. بياناتك موجودة في هذا المتصفح فقط.</span><a class="btn sm" href="#/settings">نسخة احتياطية الآن</a></div>` : ""}
   <div class="head"><div><h1>لوحة القيادة</h1><div class="sub">${fdate(t)} — ${esc(db.settings.name)}</div></div>
     <div class="tools only-d"><a class="btn primary big" href="#/sale">🧾 بيع جديد <kbd>F1</kbd></a></div></div>
+  ${setup}
+  ${noBuy ? `<div class="banner"><span>⚠ ${noBuy} منتج بدون سعر شراء، لذلك الأرباح غير دقيقة.</span><a class="btn sm" href="#/products">إكمال الأسعار</a></div>` : ""}
+  ${backupOld ? `<div class="banner"><span>💾 لم تحفظ نسخة احتياطية منذ أكثر من أسبوع. بياناتك موجودة في هذا المتصفح فقط.</span><a class="btn sm" href="#/settings">نسخة احتياطية الآن</a></div>` : ""}
   <div class="quick">
     <a href="#/journal"><span>📒</span>سجل المبيعات</a><a href="#/purchase"><span>📥</span>شراء</a>
     <a href="#/cash"><span>💰</span>الخزينة</a><a href="#/charges"><span>💸</span>مصروف</a>
@@ -684,7 +652,7 @@ function viewDoc(type, el){
         <td class="c-qty" data-l="الكمية"><div class="stepper"><button type="button" data-step="1" data-si="${i}" aria-label="زيادة">+</button><input type="number" min="0" step="any" data-i="${i}" data-f="qty" value="${qf(l.qty)}" aria-label="الكمية"><button type="button" data-step="-1" data-si="${i}" aria-label="إنقاص">−</button></div></td>
         <td class="c-price" data-l="السعر"><input type="number" min="0" step="any" data-i="${i}" data-f="price" value="${qf(l.price)}" aria-label="السعر"></td>
         <td class="n c-amt" data-l="المبلغ"><b data-amt="${i}">${m(l.qty * l.price)}</b></td>
-        ${isSale && db.settings.showProfit ? `<td class="n muted c-prf" data-l="الربح" data-prf="${i}">${m(l.qty * (l.price - (l.buy || 0)))}</td>` : ""}
+        ${isSale && db.settings.showProfit ? `<td class="n muted c-prf" data-l="الربح" data-prf="${i}">${l.buy > 0 ? m(l.qty * (l.price - l.buy)) : "—"}</td>` : ""}
         <td class="c-del"><button class="btn icon danger" data-del="${i}" aria-label="حذف السطر">✕</button></td></tr>`;
     }).join("") : `<tr><td colspan="11" class="empty">الوصل فارغ — ابدأ بمسح أو كتابة كود المنتج</td></tr>`;
     refreshTotals();
@@ -755,7 +723,7 @@ function viewDoc(type, el){
     const l = d.lines[i], v = num(e.target.value), f = e.target.dataset.f;
     if (f === "colis") l.qty = r2(v * l.colisage); else l[f] = v;
     const amt = $(`[data-amt="${i}"]`); amt && (amt.textContent = m(l.qty * l.price));
-    const prf = $(`[data-prf="${i}"]`); prf && (prf.textContent = m(l.qty * (l.price - (l.buy || 0))));
+    const prf = $(`[data-prf="${i}"]`); prf && (prf.textContent = l.buy > 0 ? m(l.qty * (l.price - l.buy)) : "—");
     if (f === "colis"){ const q = tbody.querySelector(`[data-i="${i}"][data-f="qty"]`); q.value = qf(l.qty); }
     if (f === "qty"){ const c = tbody.querySelector(`[data-i="${i}"][data-f="colis"]`); c && (c.value = qf(l.qty / l.colisage)); }
     refreshTotals(); saveDraft();
@@ -992,7 +960,7 @@ function viewProducts(el){
     $("#p-table").innerHTML = rows.length ? `<table class="tbl"><thead><tr><th>الكود</th><th>المنتج</th><th>العائلة</th><th class="n">الشراء</th><th class="n">التجزئة</th><th class="n">الجملة</th><th class="n">الهامش</th><th class="n">المخزون</th><th class="n">التعبئة</th><th class="n">القيمة</th><th></th></tr></thead>
       <tbody>${rows.map(p => { const f = db.families.find(x => x.id === p.familyId), mg = p.sell ? (p.sell - p.buy) / p.sell * 100 : 0; return `<tr>
         <td class="n muted">${esc(p.code)}</td><td class="wrap"><b>${esc(p.name)}</b></td><td>${f ? esc(f.name) : "—"}</td>
-        <td class="n">${m(p.buy)}</td><td class="n">${m(p.sell)}</td><td class="n">${p.sellGros ? m(p.sellGros) : "—"}</td><td class="n muted">${mg.toFixed(0)}%</td>
+        <td class="n">${m(p.buy)}</td><td class="n">${m(p.sell)}</td><td class="n">${p.sellGros ? m(p.sellGros) : "—"}</td><td class="n muted">${p.buy > 0 ? mg.toFixed(0) + "%" : "—"}</td>
         <td><span class="pill ${p.stock <= 0 ? "bad" : p.stock <= p.min ? "warn" : "ok"} n">${qf(p.stock)}</span></td>
         <td class="n muted">${p.colisage > 1 ? p.colisage : "—"}</td><td class="n">${m(Math.max(0, p.stock) * p.buy)}</td>
         <td><div class="acts"><button class="btn sm" data-adj="${p.id}">جرد</button><button class="btn sm" data-ed="${p.id}">تعديل</button><button class="btn sm danger" data-del="${p.id}">حذف</button></div></td></tr>`; }).join("")}</tbody></table>`
@@ -1279,7 +1247,7 @@ function viewSettings(el){
         <div class="list-row"><span>اختيار الزبون</span><kbd>F9</kbd></div>
         <p class="muted" style="margin-bottom:0">قارئ الباركود يعمل مباشرة: امسح المنتج في خانة البحث.</p></div>
       <div class="card"><h2 class="neg">منطقة الخطر</h2>
-        <div class="tools"><button class="btn danger" id="wipe">حذف كل البيانات</button><button class="btn" id="demo">تحميل بيانات تجريبية</button></div></div>
+        <div class="tools"><button class="btn danger" id="wipe">حذف كل البيانات</button></div></div>
     </div>
   </div>`;
   $("#set-f").onsubmit = e => {
@@ -1302,7 +1270,6 @@ function viewSettings(el){
     r.readAsText(f);
   };
   $("#wipe").onclick = () => { if (prompt('لحذف كل البيانات نهائيًا اكتب: حذف') !== "حذف") return; const st = db.settings; db = emptyDb(); db.settings = Object.assign(db.settings, {name:st.name, activity:st.activity, address:st.address, phone:st.phone, rc:st.rc, nif:st.nif, ai:st.ai}); save(); toast("تم حذف كل البيانات"); route(); };
-  $("#demo").onclick = () => { if (!confirm("سيتم استبدال بياناتك الحالية ببيانات تجريبية. متابعة؟")) return; db = seed(); save(); route(); };
 }
 
 /* ================= الطباعة ================= */
