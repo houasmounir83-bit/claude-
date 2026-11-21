@@ -405,7 +405,8 @@ function emptyDb(){
 }
 let saveTimer;
 function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(db)); $("#save-state").textContent = "✓ محفوظ على هذا الجهاز"; }
+  db._rev = Date.now(); cloudSchedule();
+  try { localStorage.setItem(KEY, JSON.stringify(db)); if (!cloud.ready) $("#save-state").textContent = "✓ محفوظ على هذا الجهاز"; }
   catch(e){ storageOk = false; $("#save-state").textContent = "⚠ تعذّر الحفظ"; toast("تعذّر الحفظ في المتصفح! صدّر نسخة احتياطية من الإعدادات فورًا.", true); }
 }
 const prod = id => db.products.find(p => p.id === id);
@@ -557,7 +558,7 @@ function viewDash(el){
   const top = {}; sMonth.forEach(s => s.lines.forEach(l => { top[l.name] = (top[l.name] || 0) + l.qty * l.price; }));
   const topList = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const debtors = db.clients.map(c => [c, balance("client", c.id)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  const backupOld = !db.settings.demo && (!db.settings.lastBackup || (Date.now() - db.settings.lastBackup) > 7 * 864e5);
+  const backupOld = !cloud.ready && !db.settings.demo && (!db.settings.lastBackup || (Date.now() - db.settings.lastBackup) > 7 * 864e5);
   el.innerHTML = `
   ${backupOld ? `<div class="banner"><span>💾 لم تحفظ نسخة احتياطية منذ أكثر من أسبوع. بياناتك موجودة في هذا المتصفح فقط.</span><a class="btn sm" href="#/settings">نسخة احتياطية الآن</a></div>` : ""}
   <div class="head"><div><h1>لوحة القيادة</h1><div class="sub">${fdate(t)} — ${esc(db.settings.name)}</div></div>
@@ -1268,6 +1269,7 @@ function viewSettings(el){
       <div class="card"><h2>💾 النسخ الاحتياطي</h2>
         <p class="muted">كل البيانات محفوظة في هذا المتصفح على هذا الجهاز فقط. احفظ نسخة احتياطية كل أسبوع على فلاشة أو إيميل.</p>
         <p>آخر نسخة: <b>${s.lastBackup ? fdate(toLocal(new Date(s.lastBackup))) : "لم تُحفظ بعد"}</b></p>
+        <p id="cloud-line">${cloud.ready ? `☁️ النسخ التلقائي في حسابك على Claude: <b class="pos">مفعّل</b>${cloud.remoteAt ? " — آخر رفع " + fdate(toLocal(new Date(cloud.remoteAt))) : ""}` : `<span class="muted">☁️ النسخ التلقائي يعمل فقط عند فتح البرنامج من رابط Claude.</span>`}</p>
         <div class="tools"><button class="btn ok" id="bk-out">⬇ تحميل نسخة احتياطية</button><button class="btn" id="bk-in">⬆ استرجاع نسخة</button></div>
         <input type="file" id="bk-file" accept=".json" hidden>
       </div>
@@ -1372,13 +1374,86 @@ function printStatement(kind, id){
 window.addEventListener("afterprint", () => { $("#print").innerHTML = ""; });
 
 /* ================= تصدير ================= */
-function download(name, content, type){
+async function download(name, content, type){
+  const dl = window.claude && window.claude.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dl){ try { await dl.save({filename:name, data:new Blob([content], {type})}); return; } catch(e){ if (e && e.code === "declined") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([content], {type})); a.download = name;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 function csv(name, rows){
   const cell = v => { const s = String(v ?? ""); return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   download(name, "﻿" + rows.map(r => r.map(cell).join(";")).join("\r\n"), "text/csv;charset=utf-8");
+}
+
+/* ================= النسخ السحابي (عند الفتح من رابط Claude) ================= */
+// تُحفظ البيانات كاملة في حساب المستخدم (مسار خاص لا يراه غيره)، مقسّمة إلى أجزاء.
+const cloud = { db:null, base:"", ready:false, remoteAt:0, timer:null, pushing:false, again:false, conflict:false };
+const CHUNK = 180000;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cloudStatus(t){ const el = $("#save-state"); if (el) el.textContent = t; }
+function cloudSchedule(){ if (!cloud.ready || cloud.conflict) return; clearTimeout(cloud.timer); cloud.timer = setTimeout(cloudPush, 2500); }
+async function readRemote(){
+  const meta = await cloud.db.doc(cloud.base + "meta").get();
+  if (!meta.exists) return null;
+  const m = meta.data();
+  const parts = await Promise.all([...Array(m.n)].map((_, i) => cloud.db.doc(cloud.base + "c" + i).get()));
+  if (parts.some(p => !p.exists || p.data().at !== m.at)) return null; // نسخة غير مكتملة
+  return { at:m.at, data:JSON.parse(parts.map(p => p.data().s).join("")) };
+}
+async function cloudPush(){
+  if (!cloud.ready || cloud.conflict) return;
+  if (cloud.pushing){ cloud.again = true; return; }
+  cloud.pushing = true; cloudStatus("☁️ جارٍ الحفظ في حسابك…");
+  try {
+    const meta = await cloud.db.doc(cloud.base + "meta").get();
+    const rAt = meta.exists ? meta.data().at : 0;
+    if (rAt && rAt !== cloud.remoteAt){ cloud.conflict = true; showConflict(); return; } // جهاز آخر غيّر البيانات
+    const json = JSON.stringify(db), at = Date.now(), n = Math.ceil(json.length / CHUNK) || 1;
+    for (let i = 0; i < n; i++) await cloud.db.doc(cloud.base + "c" + i).set({ s:json.slice(i * CHUNK, (i + 1) * CHUNK), at });
+    await cloud.db.doc(cloud.base + "meta").set({ n, at, size:json.length });
+    const old = meta.exists ? meta.data().n : 0;
+    for (let i = n; i < old; i++) cloud.db.doc(cloud.base + "c" + i).delete().catch(() => {});
+    cloud.remoteAt = at; try { localStorage.setItem(KEY + ":remoteAt", String(at)); } catch {}
+    cloudStatus("☁️ محفوظ في حسابك على Claude");
+  } catch(e){
+    cloudStatus(e && e.code === "quota_exceeded" ? "⚠ مساحة الحفظ السحابي ممتلئة — احفظ نسخة احتياطية" : "⚠ لم يُرفع للسحابة بعد (سيُعاد المحاولة)");
+    if (!(e && (e.code === "quota_exceeded" || e.code === "invalid_argument" || e.code === "revoked"))) setTimeout(cloudSchedule, 15000);
+  } finally {
+    cloud.pushing = false;
+    if (cloud.again){ cloud.again = false; cloudSchedule(); }
+  }
+}
+function adoptRemote(r){ db = normalize(r.data); cloud.remoteAt = r.at; cloudStatus("☁️ محفوظ في حسابك على Claude"); try { localStorage.setItem(KEY, JSON.stringify(db)); localStorage.setItem(KEY + ":remoteAt", String(r.at)); } catch {} route(); }
+function showConflict(){
+  cloudStatus("⚠ تغييرات من جهاز آخر");
+  modal("تم تعديل البيانات من جهاز آخر", `<p>حسابك على Claude فيه نسخة أحدث حفظها جهاز آخر. اختر أي نسخة تريد الاحتفاظ بها:</p>
+    <div class="m-foot"><button class="btn primary" id="cf-remote">استعمال نسخة الجهاز الآخر</button><button class="btn danger" id="cf-local">الإبقاء على نسخة هذا الجهاز</button></div>
+    <p class="muted">نصيحة: استعمل جهازًا واحدًا في نفس الوقت لتجنّب هذا.</p>`, b => {
+    $("#cf-remote", b).onclick = async () => { const r = await readRemote().catch(() => null); closeModal(); cloud.conflict = false; if (r) { adoptRemote(r); toast("✓ تم تحميل نسخة الجهاز الآخر"); } };
+    $("#cf-local", b).onclick = async () => { const m = await cloud.db.doc(cloud.base + "meta").get().catch(() => null); cloud.remoteAt = m && m.exists ? m.data().at : 0; cloud.conflict = false; closeModal(); cloudPush(); };
+  });
+}
+async function cloudInit(){
+  if (!window.claude || typeof window.claude.use !== "function") return;
+  try {
+    const [cdb, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!cdb || !user) return;
+    const id = await user.id(); if (!id) return;
+    cloud.db = cdb; cloud.base = "data/users/" + id + "/dafter_";
+    cloudStatus("☁️ جارٍ الاتصال بحسابك…");
+    let r = null;
+    for (let k = 0; k < 2; k++){ try { r = await Promise.race([readRemote(), sleep(10000).then(() => { throw {code:"timeout"}; })]); break; } catch(e){ if (k || (e && e.code !== "unavailable")) throw e; await sleep(800 + Math.random() * 800); } }
+    let lastRemote = 0; try { lastRemote = +localStorage.getItem(KEY + ":remoteAt") || 0; } catch {}
+    cloud.ready = true;
+    if (!r){ cloud.remoteAt = 0; cloudPush(); }
+    else if (r.at === lastRemote){ cloud.remoteAt = r.at; if ((db._rev || 0) > r.at) cloudPush(); else cloudStatus("☁️ محفوظ في حسابك على Claude"); }
+    else {
+      const localChanged = hadLocal && !db.settings.demo && (db._rev || 0) > lastRemote;
+      if (!localChanged){ adoptRemote(r); toast("☁️ تم تحميل بياناتك من حسابك على Claude"); }
+      else { cloud.remoteAt = lastRemote; cloud.conflict = true; showConflict(); return; }
+    }
+    if (curRoute() === "settings" || curRoute() === "dash") route();
+  } catch(e){ cloud.ready = false; cloudStatus("✓ محفوظ على هذا الجهاز"); }
 }
 
 /* ================= لوحة المفاتيح والبدء ================= */
@@ -1431,9 +1506,11 @@ $("#tab-more").onclick = () => {
 // تطبيق يعمل بدون إنترنت + حماية البيانات من المسح التلقائي
 if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-save();
+const hadLocal = (() => { try { return !!localStorage.getItem(KEY); } catch { return false; } })();
+if (!hadLocal){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
 route();
 enhance(document);
+cloudInit();
 </script>
 </body>
 </html>
