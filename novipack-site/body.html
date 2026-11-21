@@ -60,7 +60,8 @@ section{padding-block:64px}
 .sec-head p{color:var(--muted)}
 
 /* products */
-.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+@media (max-width:1100px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .prod{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
 .prod img{width:100%;height:auto;max-width:100%;background:#EEF3F8}
 .prod-body{padding:22px;display:grid;gap:14px;align-content:start}
@@ -170,7 +171,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
           <a class="btn btn-green" href="#order"><svg><use href="#wa"/></svg>اطلب عبر واتساب</a>
           <a class="btn btn-ghost" href="#products">شوف المنتجات</a>
         </div>
-        <div class="hero-facts"><span><b>180 م</b> ورق الألمنيوم</span><span><b>200 م</b> الغلاف الشفاف</span><span><b>جملة</b> وتجزئة</span></div>
+        <div class="hero-facts"><span><b>150 و 180 م</b> ورق الألمنيوم</span><span><b>200 م</b> الغلاف الشفاف</span><span><b>جملة</b> وتجزئة</span></div>
       </div>
       <img class="hero-photo" src="images/hero.jpg" alt="لفائف ورق الألمنيوم NOVIPACK في المصنع" width="1100" height="1064">
     </div>
@@ -282,6 +283,8 @@ const CONFIG = {
 const PRODUCTS = [
   { id:"alu",  name:"ورق الألمنيوم 180 م", lat:"Papier aluminium 180 m", img:"images/alu-promo.jpg",
     uses:["الفرن","الشواء","الساندويتش","الثلاجة"], price:0 },   // price: السعر بالدينار، 0 = "السعر عند الطلب"
+  { id:"alu150", name:"ورق الألمنيوم 150 م", lat:"Papier aluminium 150 m", img:"images/alu150-promo.jpg",
+    uses:["الفرن","الشواء","الساندويتش","الثلاجة"], price:0 },
   { id:"film", name:"الغلاف الشفاف 200 م", lat:"Film étirable 200 m", img:"images/film-promo.jpg",
     uses:["تغطية الصحون","الخضر والفواكه","العجين","المطاعم"], price:0 },
   { id:"napkin", name:"مناديل المائدة Novi", lat:"Serviettes 28×28 cm", img:"images/napkins.jpg",
