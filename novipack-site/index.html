@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NOVIPACK نوفي باك</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="NOVIPACK نوفي باك: ورق الألمنيوم والغلاف الشفاف للدار والمطاعم والمحلات. جودة التغليف… تحافظ على طعامك. اطلب عبر واتساب.">
+<meta name="description" content="NOVIPACK نوفي باك: ورق الألمنيوم والغلاف الشفاف ومناديل المائدة للدار والمطاعم والمحلات. جودة التغليف… تحافظ على طعامك. اطلب عبر واتساب.">
 <link rel="icon" href="images/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,7 +62,7 @@ section{padding-block:64px}
 .sec-head p{color:var(--muted)}
 
 /* products */
-.products{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .prod{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
 .prod img{width:100%;height:auto;max-width:100%;background:#EEF3F8}
 .prod-body{padding:22px;display:grid;gap:14px;align-content:start}
@@ -85,7 +85,7 @@ section{padding-block:64px}
 /* wholesale */
 .pro{background:var(--navy);color:#fff}
 .pro-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
-.pro-grid img{border-radius:20px;max-width:100%;width:100%;aspect-ratio:4/3;object-fit:cover}
+.pro-grid img{border-radius:20px;max-width:100%;width:100%;height:auto}
 .pro .sec-head p{color:#D5DCEB}
 .pro ul{margin:0 0 24px;padding:0;list-style:none;display:grid;gap:12px}
 .pro li{display:flex;gap:12px;align-items:flex-start}
@@ -126,12 +126,14 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
 
 @media (max-width:860px){
   .nav ul{display:none}
-  .hero-grid,.pro-grid,.order-grid,.products{grid-template-columns:1fr}
+  .hero-grid,.pro-grid,.order-grid{grid-template-columns:1fr}
+  .products{grid-template-columns:1fr 1fr}
   .hero-photo{order:-1}
   .why{grid-template-columns:1fr 1fr}
 }
 @media (max-width:480px){
   .row{grid-template-columns:1fr}
+  .products{grid-template-columns:1fr}
   .why{grid-template-columns:1fr}
   .nav .btn span{display:none}
 }
@@ -160,14 +162,14 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow" style="color:var(--green-l)">ورق الألمنيوم · الغلاف الشفاف</span>
+        <span class="eyebrow" style="color:var(--green-l)">ورق الألمنيوم · الغلاف الشفاف · مناديل المائدة</span>
         <h1>جودة التغليف… <span>تحافظ على طعامك</span></h1>
         <p>مواد تغليف غذائية من NOVIPACK للدار، المطاعم، المخابز والمحلات. لفائف قوية ما تتقطعش، والطول اللي مكتوب على العلبة هو الطول اللي تاخذو.</p>
         <div class="hero-cta">
           <a class="btn btn-green" href="#order"><svg><use href="#wa"/></svg>اطلب عبر واتساب</a>
           <a class="btn btn-ghost" href="#products">شوف المنتجات</a>
         </div>
-        <div class="hero-facts"><span><b>200 م</b> لفافة الغلاف الشفاف</span><span><b>جملة</b> وتجزئة</span><span><b>غذائي</b> آمن للأكل</span></div>
+        <div class="hero-facts"><span><b>180 م</b> ورق الألمنيوم</span><span><b>200 م</b> الغلاف الشفاف</span><span><b>جملة</b> وتجزئة</span></div>
       </div>
       <img class="hero-photo" src="images/boxes.jpg" alt="علبة ورق الألمنيوم وعلبة الغلاف الشفاف NOVIPACK" width="1115" height="636">
     </div>
@@ -201,7 +203,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
         </ul>
         <a class="btn btn-green" href="#order" data-type="pro"><svg><use href="#wa"/></svg>اطلب عرض سعر الجملة</a>
       </div>
-      <img src="images/rolls.jpg" alt="لفائف ورق الألمنيوم NOVIPACK" width="1290" height="925" loading="lazy">
+      <img src="images/gros-promo.jpg" alt="أسعار الجملة NOVIPACK للمحلات والمطاعم" width="1000" height="1000" loading="lazy">
     </div>
   </section>
 
@@ -253,6 +255,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
       <div class="sec-head"><span class="eyebrow">أسئلة متكررة</span><h2>عندك سؤال؟</h2></div>
       <details><summary>واش نقدر نستعمل ورق الألمنيوم في الفرن؟</summary><p>نعم، ورق الألمنيوم يتحمل حرارة الفرن والشواء. ما تستعملوش في الميكرو-أوند (micro-ondes).</p></details>
       <details><summary>الغلاف الشفاف يصلح للثلاجة؟</summary><p>نعم، يغطي الصحون ويحفظ الخضر والعجين والأكل في الثلاجة. ما تحطوش في الفرن.</p></details>
+      <details><summary>واش هي مقاسات المناديل؟</summary><p>مناديل المائدة Novi مقاسها 28 × 28 سم مفتوحة، بطبقتين (2 plis)، ومنقوشة باش تمتص أكثر.</p></details>
       <details><summary>كيفاش نطلب؟</summary><p>املأ الاستمارة في هذه الصفحة واضغط «أرسل الطلبية عبر واتساب»، ولا راسلنا مباشرة على واتساب.</p></details>
       <details><summary>تبيعو بالجملة؟</summary><p>نعم، عندنا أسعار خاصة للمحلات والمطاعم وتجار الجملة حسب الكمية. اختر «محل / مطعم / تاجر» في الاستمارة.</p></details>
     </div>
@@ -262,7 +265,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
 <footer>
   <div class="wrap foot">
     <img src="images/logo-dark.png" alt="NOVIPACK" width="330" height="78" loading="lazy">
-    <span>ورق الألمنيوم · الغلاف الشفاف</span>
+    <span>ورق الألمنيوم · الغلاف الشفاف · مناديل المائدة</span>
     <span>© <span id="year">2026</span> NOVIPACK</span>
   </div>
 </footer>
@@ -276,10 +279,12 @@ const CONFIG = {
   phoneDisplay: "0X XX XX XX XX"  // الرقم كما يظهر للزبون
 };
 const PRODUCTS = [
-  { id:"alu",  name:"ورق الألمنيوم", lat:"Papier aluminium", img:"images/alu-box.jpg",
+  { id:"alu",  name:"ورق الألمنيوم 180 م", lat:"Papier aluminium 180 m", img:"images/alu-promo.jpg",
     uses:["الفرن","الشواء","الساندويتش","الثلاجة"], price:0 },   // price: السعر بالدينار، 0 = "السعر عند الطلب"
-  { id:"film", name:"الغلاف الشفاف 200 م", lat:"Film étirable 200 m", img:"images/film-box.jpg",
-    uses:["تغطية الصحون","الخضر والفواكه","العجين","المطاعم"], price:0 }
+  { id:"film", name:"الغلاف الشفاف 200 م", lat:"Film étirable 200 m", img:"images/film-promo.jpg",
+    uses:["تغطية الصحون","الخضر والفواكه","العجين","المطاعم"], price:0 },
+  { id:"napkin", name:"مناديل المائدة Novi", lat:"Serviettes 28×28 cm", img:"images/napkins.jpg",
+    uses:["طبقتين 2 plis","المائدة","المطاعم","الاستعمال اليومي"], price:0 }
 ];
 /* ================================= */
 
@@ -289,7 +294,7 @@ const fmt = p => p > 0 ? `${p.toLocaleString("fr-DZ")} دج` : "السعر عن�
 
 $("#product-list").innerHTML = PRODUCTS.map(p => `
   <article class="prod">
-    <img src="${p.img}" alt="${p.name}" loading="lazy" width="1090" height="310">
+    <img src="${p.img}" alt="${p.name}" loading="lazy" width="1000" height="1000">
     <div class="prod-body">
       <div class="prod-title"><h3>${p.name}</h3><span class="lat">${p.lat}</span></div>
       <ul class="uses">${p.uses.map(u => `<li>${u}</li>`).join("")}</ul>
@@ -298,7 +303,7 @@ $("#product-list").innerHTML = PRODUCTS.map(p => `
   </article>`).join("");
 
 $("#f-product").innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join("")
-  + `<option value="both">الزوج (ألمنيوم + غلاف)</option>`;
+  + `<option value="both">مجموعة (ألمنيوم + غلاف + مناديل)</option>`;
 $("#phone-text").textContent = CONFIG.phoneDisplay;
 $("#year").textContent = new Date().getFullYear();
 
