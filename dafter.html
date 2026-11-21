@@ -724,7 +724,7 @@ function viewDoc(type, el){
 
   // اقتراحات البحث
   const sugg = $("#d-sugg"); let sItems = [], sIdx = -1;
-  function hideSugg(){ sugg.hidden = true; sItems = []; sIdx = -1; $("#d-code").setAttribute("aria-expanded", "false"); }
+  function hideSugg(){ sugg.hidden = true; sItems = []; sIdx = -1; const c = $("#d-code"); c && c.setAttribute("aria-expanded", "false"); }
   function showSugg(){
     const q = $("#d-code").value.trim().toLowerCase();
     if (!q){ hideSugg(); return; }
