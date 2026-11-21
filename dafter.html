@@ -144,6 +144,42 @@ label.f input,label.f select,label.f textarea{color:var(--ink);font-weight:500;f
 @media (max-width:1100px){.doc-top{grid-template-columns:1fr}.doc-fields{grid-template-columns:1fr 1fr}.doc-foot{grid-template-columns:1fr}.actions{justify-content:flex-start}}
 @media (max-width:520px){.doc-fields{grid-template-columns:1fr}.screen b{font-size:2rem}}
 
+/* phone */
+.mbar{display:none}
+#d-cam{display:none}
+@media (hover:none){kbd{display:none}}
+@media (max-width:640px){
+  .doc-fields{grid-template-columns:1fr 1fr;gap:8px}
+  .doc-fields label:nth-child(3){grid-column:1/-1}
+  .doc-top .screen{display:none}
+  .addbar{flex-wrap:wrap}.addbar #d-code{flex-basis:100%}.addbar #d-qty{flex:1}
+  .lines thead{display:none}
+  .lines,.lines tbody{display:block}
+  .lines tr{display:grid;grid-template-columns:1fr 1fr 1fr 40px;gap:4px 8px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:end}
+  .lines td{display:block;border:0;padding:0;white-space:normal;min-width:0}
+  .lines td[data-l]::before{content:attr(data-l);display:block;font-size:.72rem;color:var(--muted);font-weight:700}
+  .lines td.c-no,.lines td.c-col{display:none}
+  .lines td.c-name{grid-area:1/1/2/4;font-size:1rem}
+  .lines td.c-del{grid-area:1/4/2/5}
+  .lines td.c-code{grid-area:2/1/3/3;font-size:.8rem}
+  .lines td.c-stock{grid-area:2/3/3/5;font-size:.85rem;display:flex;gap:6px;align-items:baseline}
+  .lines td.c-stock::before{display:inline!important}
+  .lines td.c-colis{grid-area:3/1/4/2}.lines td.c-qty{grid-area:3/2/4/3}.lines td.c-price{grid-area:3/3/4/5}
+  .lines td.c-amt{grid-area:4/1/5/3;font-size:1.05rem}.lines td.c-prf{grid-area:4/3/5/5}
+  .lines td.empty{grid-column:1/-1}
+  .brand b{font-size:1rem;white-space:nowrap}
+  .lines input{width:100%;font-size:1rem;padding:.45em .5em}
+  .doc .tbl-wrap{max-height:none;border:0}
+  .doc-foot .actions .big{display:none}
+  .mbar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--screen);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:12px;align-items:center;justify-content:space-between;box-shadow:0 -6px 20px rgba(0,0,0,.25)}
+  .mbar b{font:800 1.6rem/1 "Tajawal",monospace;color:var(--screen-ink);direction:ltr}
+  .mbar small{display:block;color:#9fb0cf;font-size:.75rem}
+  main.has-bar{padding-bottom:90px}
+  input,select,textarea{font-size:16px}
+}
+@media (max-width:640px) and (hover:none){#d-cam{display:inline-flex}}
+.cam video{width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover}
+
 /* dialog */
 dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100% - 24px));background:var(--surface);color:var(--ink);box-shadow:0 30px 60px rgba(0,0,0,.3)}
 dialog.wide{width:min(900px,calc(100% - 24px))}
@@ -367,6 +403,7 @@ function route(){
   const r = routes[curRoute()] ? curRoute() : "dash";
   $$("#nav a").forEach(a => a.classList.toggle("on", a.dataset.r === r));
   $("#company-name").textContent = db.settings.name;
+  view.classList.remove("has-bar");
   view.innerHTML = demoBanner();
   const holder = document.createElement("div"); view.appendChild(holder);
   routes[r](holder);
@@ -489,10 +526,11 @@ function viewDoc(type, el){
       <div class="addbar">
         <input id="d-code" list="plist" placeholder="🔍 الكود / الباركود / اسم المنتج ثم Enter" autocomplete="off" aria-label="بحث عن منتج">
         <input id="d-qty" type="number" value="1" min="0" step="any" aria-label="الكمية" title="الكمية">
+        <button class="btn" id="d-cam" type="button" aria-label="مسح الباركود بالكاميرا">📷 كاميرا</button>
         <button class="btn primary" id="d-add">إدراج ⏎</button>
         <datalist id="plist">${db.products.map(p => `<option value="${esc(p.code)}">${esc(p.name)} — ${m(isSale ? p.sell : p.buy)} (مخزون ${qf(p.stock)})</option>`).join("")}</datalist>
       </div>
-      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>الكود</th><th>المنتج</th><th class="n">المخزون</th><th class="n">طرود</th><th class="n">التعبئة</th><th class="n">الكمية</th><th class="n">${isSale ? "سعر البيع" : "سعر الشراء"}</th><th class="n">المبلغ</th>${isSale && db.settings.showProfit ? `<th class="n">الربح</th>` : ""}<th></th></tr></thead>
+      <div class="tbl-wrap"><table class="tbl lines"><thead><tr><th>#</th><th>الكود</th><th>المنتج</th><th class="n">المخزون</th><th class="n">طرود</th><th class="n">التعبئة</th><th class="n">الكمية</th><th class="n">${isSale ? "سعر البيع" : "سعر الشراء"}</th><th class="n">المبلغ</th>${isSale && db.settings.showProfit ? `<th class="n">الربح</th>` : ""}<th></th></tr></thead>
         <tbody id="d-lines"></tbody></table></div>
     </div>
     <div class="card doc-foot">
@@ -511,13 +549,15 @@ function viewDoc(type, el){
         <button class="btn ok big" id="d-validate">✓ تأكيد وحفظ <kbd>F3</kbd></button>
       </div>
     </div>
-  </div>`;
+  </div>
+  <div class="mbar"><div><small>الإجمالي (${esc(db.settings.currency)})</small><b id="mb-total">0.00</b></div><button class="btn ok big" id="mb-ok">✓ تأكيد وحفظ</button></div>`;
+  view.classList.add("has-bar");
 
   const tbody = $("#d-lines");
   const cur = () => party(C.kind, d.partyId);
   function refreshTotals(){
     const t = docTotals(d), paid = resolvePaid(d, t), rest = r2(t.total - paid), pt = cur();
-    $("#d-total").textContent = m(t.total);
+    $("#d-total").textContent = m(t.total); $("#mb-total").textContent = m(t.total);
     $("#d-screen-sub").textContent = t.remise ? `قبل التخفيض ${m(t.sub)}` : "";
     $("#d-stats").innerHTML = `<span>عدد المنتجات: <b>${t.count}</b></span><span>مجموع الكميات: <b class="n">${qf(t.qty)}</b></span>${isSale && db.settings.showProfit ? `<span>الربح: <b class="${t.profit >= 0 ? "pos" : "neg"} n">${m(t.profit)}</b></span>` : ""}`;
     $("#d-rest").innerHTML = rest > 0 ? `الباقي (دَين): <span class="neg n">${m(rest)}</span>` : rest < 0 ? `الفكّة للزبون: <span class="pos n">${m(-rest)}</span>` : `مدفوع بالكامل ✓`;
@@ -531,15 +571,15 @@ function viewDoc(type, el){
       const p = prod(l.pid), col = l.colisage > 1 ? l.colisage : 0;
       const over = isSale && p && !d.editingId && l.qty > p.stock;
       return `<tr class="${over ? "over" : ""}" title="${over ? "الكمية أكبر من المخزون" : ""}">
-        <td class="muted">${i + 1}</td><td class="n muted">${esc(l.code)}</td><td class="wrap"><b>${esc(l.name)}</b></td>
-        <td class="n ${p && p.stock <= 0 ? "neg" : "muted"}">${p ? qf(p.stock) : "—"}</td>
-        <td>${col ? `<input type="number" min="0" step="any" data-i="${i}" data-f="colis" value="${qf(l.qty / col)}" aria-label="عدد الطرود">` : `<span class="muted">—</span>`}</td>
-        <td class="n muted">${col || "—"}</td>
-        <td><input type="number" min="0" step="any" data-i="${i}" data-f="qty" value="${qf(l.qty)}" aria-label="الكمية"></td>
-        <td><input type="number" min="0" step="any" data-i="${i}" data-f="price" value="${qf(l.price)}" aria-label="السعر"></td>
-        <td class="n"><b data-amt="${i}">${m(l.qty * l.price)}</b></td>
-        ${isSale && db.settings.showProfit ? `<td class="n muted" data-prf="${i}">${m(l.qty * (l.price - (l.buy || 0)))}</td>` : ""}
-        <td><button class="btn icon danger" data-del="${i}" aria-label="حذف السطر">✕</button></td></tr>`;
+        <td class="muted c-no">${i + 1}</td><td class="n muted c-code">${esc(l.code)}</td><td class="wrap c-name"><b>${esc(l.name)}</b></td>
+        <td class="n c-stock ${p && p.stock <= 0 ? "neg" : "muted"}" data-l="المخزون">${p ? qf(p.stock) : "—"}</td>
+        <td class="c-colis" data-l="طرود${col ? " ×" + col : ""}">${col ? `<input type="number" min="0" step="any" data-i="${i}" data-f="colis" value="${qf(l.qty / col)}" aria-label="عدد الطرود">` : `<span class="muted">—</span>`}</td>
+        <td class="n muted c-col">${col || "—"}</td>
+        <td class="c-qty" data-l="الكمية"><input type="number" min="0" step="any" data-i="${i}" data-f="qty" value="${qf(l.qty)}" aria-label="الكمية"></td>
+        <td class="c-price" data-l="السعر"><input type="number" min="0" step="any" data-i="${i}" data-f="price" value="${qf(l.price)}" aria-label="السعر"></td>
+        <td class="n c-amt" data-l="المبلغ"><b data-amt="${i}">${m(l.qty * l.price)}</b></td>
+        ${isSale && db.settings.showProfit ? `<td class="n muted c-prf" data-l="الربح" data-prf="${i}">${m(l.qty * (l.price - (l.buy || 0)))}</td>` : ""}
+        <td class="c-del"><button class="btn icon danger" data-del="${i}" aria-label="حذف السطر">✕</button></td></tr>`;
     }).join("") : `<tr><td colspan="11" class="empty">الوصل فارغ — ابدأ بمسح أو كتابة كود المنتج</td></tr>`;
     refreshTotals();
   }
@@ -603,6 +643,8 @@ function viewDoc(type, el){
   $("#d-paid").oninput = e => { d.paid = e.target.value; refreshTotals(); saveDraft(); };
   $("#d-note").oninput = e => { d.note = e.target.value; saveDraft(); };
   $("#d-validate").onclick = () => commitDoc(type);
+  $("#mb-ok").onclick = () => commitDoc(type);
+  $("#d-cam").onclick = () => scanBarcode(code => { $("#d-code").value = code; addFromInput(); });
   const nb = $("#d-new"); nb && (nb.onclick = () => newDoc(type));
   const cb = $("#d-cancel"); cb && (cb.onclick = () => { db.drafts[type] = blank(type); save(); route(); });
   const hb = $("#d-hold"); hb && (hb.onclick = holdDoc);
@@ -676,6 +718,31 @@ function deleteDoc(type, id){
   coll.splice(coll.indexOf(rec), 1);
   if (db.drafts[type] && db.drafts[type].editingId === id) db.drafts[type] = blank(type);
   save(); toast("تم حذف الوصل"); route();
+}
+
+/* ================= مسح الباركود بالكاميرا ================= */
+async function scanBarcode(onCode){
+  if (!("BarcodeDetector" in window) || !navigator.mediaDevices){
+    return toast("هذا المتصفح لا يدعم المسح بالكاميرا. استعمل Chrome على أندرويد، أو اكتب الكود يدويًا.", true);
+  }
+  let stream, timer, done = false;
+  const stop = () => { done = true; clearTimeout(timer); stream && stream.getTracks().forEach(t => t.stop()); };
+  modal("📷 وجّه الكاميرا نحو الباركود", `<div class="cam"><video id="cam-v" playsinline muted></video><p class="muted" id="cam-msg">جارٍ تشغيل الكاميرا…</p></div>`);
+  dlg.addEventListener("close", stop, {once:true});
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    const v = $("#cam-v"); v.srcObject = stream; await v.play();
+    $("#cam-msg").textContent = "ضع الباركود داخل الإطار";
+    const det = new BarcodeDetector();
+    const loop = async () => {
+      if (done) return;
+      try { const r = await det.detect(v); if (r.length){ const code = r[0].rawValue; navigator.vibrate && navigator.vibrate(80); closeModal(); onCode(code); return; } } catch {}
+      timer = setTimeout(loop, 250);
+    };
+    loop();
+  } catch(e){
+    $("#cam-msg") && ($("#cam-msg").textContent = "تعذّر فتح الكاميرا. اسمح للمتصفح باستعمال الكاميرا (يجب فتح الصفحة عبر رابط https).");
+  }
 }
 
 /* ================= السجلات ================= */
