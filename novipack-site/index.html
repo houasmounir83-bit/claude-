@@ -74,6 +74,10 @@ section{padding-block:64px}
 .price{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
 .price b{font-size:1.15rem;font-variant-numeric:tabular-nums}
 .price .btn{padding:.6em 1.2em;font-size:.95rem}
+.prod{position:relative}
+.soon-tag{position:absolute;top:14px;right:14px;z-index:2;background:#F0B429;color:#16285A;font-weight:700;padding:6px 16px;border-radius:999px;box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.prod.soon img{filter:saturate(.75) brightness(.92)}
+.soon-note{color:var(--muted);font-size:.92rem}
 
 /* why */
 .why{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
@@ -162,7 +166,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow" style="color:var(--green-l)">ورق الألمنيوم · الغلاف الشفاف · مناديل المائدة</span>
+        <span class="eyebrow" style="color:var(--green-l)">ورق الألمنيوم · الغلاف الشفاف · مناديل المائدة قريباً</span>
         <h1>جودة التغليف… <span>تحافظ على طعامك</span></h1>
         <p>مواد تغليف غذائية من NOVIPACK للدار، المطاعم، المخابز والمحلات. لفائف قوية ما تتقطعش، والطول اللي مكتوب على العلبة هو الطول اللي تاخذو.</p>
         <div class="hero-cta">
@@ -255,7 +259,7 @@ footer{background:var(--navy-d);color:#C9D1E3;padding-block:36px;font-size:.92re
       <div class="sec-head"><span class="eyebrow">أسئلة متكررة</span><h2>عندك سؤال؟</h2></div>
       <details><summary>واش نقدر نستعمل ورق الألمنيوم في الفرن؟</summary><p>نعم، ورق الألمنيوم يتحمل حرارة الفرن والشواء. ما تستعملوش في الميكرو-أوند (micro-ondes).</p></details>
       <details><summary>الغلاف الشفاف يصلح للثلاجة؟</summary><p>نعم، يغطي الصحون ويحفظ الخضر والعجين والأكل في الثلاجة. ما تحطوش في الفرن.</p></details>
-      <details><summary>واش هي مقاسات المناديل؟</summary><p>مناديل المائدة Novi مقاسها 28 × 28 سم مفتوحة، بطبقتين (2 plis)، ومنقوشة باش تمتص أكثر.</p></details>
+      <details><summary>واش هي مقاسات المناديل؟</summary><p>مناديل المائدة Novi متوفرة قريباً. مقاسها 28 × 28 سم مفتوحة، بطبقتين (2 plis)، ومنقوشة باش تمتص أكثر.</p></details>
       <details><summary>كيفاش نطلب؟</summary><p>املأ الاستمارة في هذه الصفحة واضغط «أرسل الطلبية عبر واتساب»، ولا راسلنا مباشرة على واتساب.</p></details>
       <details><summary>تبيعو بالجملة؟</summary><p>نعم، عندنا أسعار خاصة للمحلات والمطاعم وتجار الجملة حسب الكمية. اختر «محل / مطعم / تاجر» في الاستمارة.</p></details>
     </div>
@@ -284,7 +288,7 @@ const PRODUCTS = [
   { id:"film", name:"الغلاف الشفاف 200 م", lat:"Film étirable 200 m", img:"images/film-promo.jpg",
     uses:["تغطية الصحون","الخضر والفواكه","العجين","المطاعم"], price:0 },
   { id:"napkin", name:"مناديل المائدة Novi", lat:"Serviettes 28×28 cm", img:"images/napkins.jpg",
-    uses:["طبقتين 2 plis","المائدة","المطاعم","الاستعمال اليومي"], price:0 }
+    uses:["طبقتين 2 plis","المائدة","المطاعم","الاستعمال اليومي"], price:0, soon:true }
 ];
 /* ================================= */
 
@@ -293,17 +297,20 @@ const waLink = text => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURICompone
 const fmt = p => p > 0 ? `${p.toLocaleString("fr-DZ")} دج` : "السعر عند الطلب";
 
 $("#product-list").innerHTML = PRODUCTS.map(p => `
-  <article class="prod">
+  <article class="prod${p.soon ? " soon" : ""}">
+    ${p.soon ? `<span class="soon-tag">قريباً</span>` : ""}
     <img src="${p.img}" alt="${p.name}" loading="lazy" width="1000" height="1000">
     <div class="prod-body">
       <div class="prod-title"><h3>${p.name}</h3><span class="lat">${p.lat}</span></div>
       <ul class="uses">${p.uses.map(u => `<li>${u}</li>`).join("")}</ul>
-      <div class="price"><b>${fmt(p.price)}</b><a class="btn btn-green" href="#order" data-product="${p.id}">اطلب</a></div>
+      ${p.soon
+        ? `<div class="price"><b>قريباً</b><span class="soon-note">يتوفر قريباً، تابعنا على صفحتنا</span></div>`
+        : `<div class="price"><b>${fmt(p.price)}</b><a class="btn btn-green" href="#order" data-product="${p.id}">اطلب</a></div>`}
     </div>
   </article>`).join("");
 
-$("#f-product").innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join("")
-  + `<option value="both">مجموعة (ألمنيوم + غلاف + مناديل)</option>`;
+$("#f-product").innerHTML = PRODUCTS.filter(p => !p.soon).map(p => `<option value="${p.id}">${p.name}</option>`).join("")
+  + `<option value="both">الزوج (ألمنيوم + غلاف)</option>`;
 $("#phone-text").textContent = CONFIG.phoneDisplay;
 $("#year").textContent = new Date().getFullYear();
 
